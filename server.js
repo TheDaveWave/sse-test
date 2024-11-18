@@ -50,7 +50,8 @@ app.post("/events", async (req, res) => {
         for(let numEvents = 1; numEvents <= number; numEvents++) {
             client.res.write(`event: eventNumber\ndata: ${numEvents}\n\n`);
             console.log("Writing to client:", `\nevent: eventNumber\ndata: ${numEvents}`);
-            await delay(1000, numEvents);
+            const random = parseFloat((Math.random() * 0.5 + 0.5).toFixed(1));
+            await delay(random * 1000, numEvents);
         }
     });
     res.json({"message": `${number} Events Sent.`});
