@@ -33,7 +33,6 @@ app.get("/sse", (req, res) => {
         clients.splice(clients.findIndex(client => client.host === host), 1);
         console.log(`Disconnecting Client: ${host}`);
         console.log("Clients:", clients.map(client => client?.host));
-
     });
 });
 
@@ -49,8 +48,8 @@ app.post("/events", async (req, res) => {
     const number = req.body?.number;
     clients.forEach(async (client) => {
         for(let numEvents = 1; numEvents <= number; numEvents++) {
-            client.res.write(`data: ${numEvents}\n\n`);
-            console.log("Writing to client:", `data: ${numEvents}`);
+            client.res.write(`event: eventNumber\ndata: ${numEvents}\n\n`);
+            console.log("Writing to client:", `\nevent: eventNumber\ndata: ${numEvents}`);
             await delay(1000, numEvents);
         }
     });
