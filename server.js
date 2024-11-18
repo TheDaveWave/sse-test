@@ -20,23 +20,21 @@ app.get("/sse", (req, res) => {
         "Connection": "keep-alive"
     });
 
-    clients.push(res);
+    const host = req.headers.host;
+    const client = { host, res };
+    clients.push(client);
+    console.log("Connecting Client:", host);
+    console.log("Clients:", clients.map(client => client?.host));
 
     res.write('data: Initialized Connection:\n\n');
 
-    // clients.forEach(async (client) => {
-    //     for(let numEvents = 1; numEvents <= 10; numEvents++) {
-    //         client.write(`data: ${numEvents}`);
-    //         await delay(1000, numEvents);
-    //     }
-    // });
-
     req.on("close", () => {
-        if(clients.indexOf(res) < 0) { return; }
-        clients.splice(clients.indexOf(res), 1);
-    });
+        if(clients.findIndex(client => client.host === host) < 0) { return; }
+        clients.splice(clients.findIndex(client => client.host === host), 1);
+        console.log(`Disconnecting Client: ${host}`);
+        console.log("Clients:", clients.map(client => client?.host));
 
-    // res.json({"message": `Events Sent.`});
+    });
 });
 
 function delay(ms, value) {
@@ -49,11 +47,9 @@ function delay(ms, value) {
 
 app.post("/events", async (req, res) => {
     const number = req.body?.number;
-    // if(!number) { res.sendStatus(400); }
     clients.forEach(async (client) => {
-        console.log("CLIENT", number);
         for(let numEvents = 1; numEvents <= number; numEvents++) {
-            client.write(`data: ${numEvents}\n\n`);
+            client.res.write(`data: ${numEvents}\n\n`);
             console.log("Writing to client:", `data: ${numEvents}`);
             await delay(1000, numEvents);
         }
