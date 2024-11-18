@@ -9,6 +9,7 @@ const clients = [];
 // Live Server Extension Port:
 // app.use(cors({origin: "http://localhost:5500", credentials: true}));
 app.use(cors({origin: "http://127.0.0.1:5500", credentials: true}));
+// app.use(cors({origin: "https://8d39-163-123-41-74.ngrok-free.app", credentials: true}));
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -55,6 +56,34 @@ app.post("/events", async (req, res) => {
         }
     });
     res.json({"message": `${number} Events Sent.`});
+});
+
+app.post("/message", async (req, res) => {
+    const message = req.body?.message;
+    const wordSegmentor = new Intl.Segmenter([], {granularity: "word"});
+    let words = Array.from(wordSegmentor.segment(message));
+    let lastWord = "";
+    for(let i = 0; i < words.length; i++) {
+        let segment = words[i];
+        if(segment.isWordLike) {
+            lastWord = segment.segment;
+        } else if(!segment.isWordLike && segment.segment.trim().length) {
+            words.splice(i - 1, 1);
+            segment.segment = (lastWord + segment.segment).trim();
+            lastWord = "";
+        }
+    }
+    words = words.map(word => word.segment);
+    clients.forEach(async (client) => {
+        for(let i = 0; i < words.length; i++) {
+            client.res.write(`event: eventWord\ndata: ${words[i]}\n\n`);
+            // console.log("Writing to client:", `\nevent: eventWord\ndata: ${words[i]}`);
+            // const ms = parseFloat((Math.random() * 0.5).toFixed(1));
+            ms = words[i].length * 75;
+            await delay(ms, words[i]);
+        }
+    });
+    res.json({"message": `Events Sent.`});
 });
 
 app.listen(PORT, () => {

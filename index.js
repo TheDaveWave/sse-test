@@ -10,11 +10,11 @@ function createEventSource() {
     // add a listener to close the connection to the event source on refresh.
     window.addEventListener("beforeunload", () => eventSource.close());
 
-    eventSource.addEventListener("eventNumber", (event) => {
-        const el = document.getElementById("numbers");
+    eventSource.addEventListener("eventWord", (event) => {
+        const el = document.getElementById("words");
         const elText = el.innerText;
         el.innerText = elText + " " + event.data;
-        console.log("Getting eventNumber data...", event.data);
+        console.log("Getting eventWord data...", event.data);
     });
     
     // eventSource.addEventListener("message", (event) => {
@@ -53,7 +53,7 @@ async function onReady() {
     connectBtn.addEventListener("click", () => requestEvents());
 
     const resetBtn = document.getElementById("connect-reset");
-    resetBtn.addEventListener("click", () => resetNumberEvents());
+    resetBtn.addEventListener("click", () => resetWordEvents());
 
     const retryBtn = document.getElementById("connect-retry");
     retryBtn.addEventListener("click", () => retryConnection());
@@ -67,7 +67,7 @@ let eventsResult = undefined;
 async function requestEvents() {
     if(eventsResult) { return }
     try {
-        eventsResult = await fetch("http://localhost:3000/events", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({"number": 10})});
+        eventsResult = await fetch("http://localhost:3000/message", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."})});
         console.log("RESULT:", eventsResult);
     } catch (err) {
         console.error("Error in onReady:", err);
@@ -89,8 +89,8 @@ function disableButtons(bool) {
     resetBtn.disabled = bool;
 }
 
-function resetNumberEvents() {
-    const el = document.getElementById("numbers");
+function resetWordEvents() {
+    const el = document.getElementById("words");
     // reset elements text and eventsResult.
     el.innerText = "", eventsResult = undefined;
 }
