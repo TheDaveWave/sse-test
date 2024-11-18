@@ -37,6 +37,8 @@ function createEventSource() {
             console.log("Max retries exceeded.");
             eventSource.close();
             updateConnectionStatus("Closed");
+            const retryBtn = document.getElementById("connect-retry");
+            retryBtn.disabled = false;
         }
     }
     return eventSource;
@@ -53,13 +55,16 @@ async function onReady() {
     const resetBtn = document.getElementById("connect-reset");
     resetBtn.addEventListener("click", () => resetNumberEvents());
 
+    const retryBtn = document.getElementById("connect-retry");
+    retryBtn.addEventListener("click", () => retryConnection());
+    retryBtn.disabled = true;
+
     updateConnectionStatus("Connecting");
 }
 
 let eventsResult = undefined;
 // Request events to be sent from the server.
 async function requestEvents() {
-    if(eventRetries >= 5) { eventRetries = 0; }
     if(eventsResult) { return }
     try {
         eventsResult = await fetch("http://localhost:3000/events", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({"number": 10})});
@@ -67,6 +72,14 @@ async function requestEvents() {
     } catch (err) {
         console.error("Error in onReady:", err);
     }
+}
+
+function retryConnection() {
+    eventRetries = 0;
+    // Close previous event source connection.
+    eventSource.close();
+    // Establish new event source connection.
+    eventSource = createEventSource(), eventsResult = undefined;
 }
 
 function disableButtons(bool) {
@@ -77,10 +90,6 @@ function disableButtons(bool) {
 }
 
 function resetNumberEvents() {
-    // Close previous event source connection.
-    eventSource.close();
-    // Establish new event source connection.
-    eventSource = createEventSource();
     const el = document.getElementById("numbers");
     // reset elements text and eventsResult.
     el.innerText = "", eventsResult = undefined;
