@@ -25,6 +25,8 @@ function createEventSource() {
         console.log("Connection Open");
         disableButtons(false);
         updateConnectionStatus("Open");
+        const retryBtn = document.getElementById("connect-retry");
+        retryBtn.disabled = true;
     }
     
     eventSource.onerror = (err) => {
